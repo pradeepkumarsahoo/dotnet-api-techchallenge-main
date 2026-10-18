@@ -4,7 +4,7 @@
 
 3.Major — String-typed sort contract that fails silently with HTTP 200.
 
-4.Critical — Recommendation algorithm is O(n·m), throws on duplicate names, and returns nulls.
+4.Critical — Recommendation algorithm -> throws on duplicate names, and returns nulls.
 
 5.Critical — Upstream calls have no timeout, cancellation, or resilience.
 
@@ -17,3 +17,7 @@
 9.Major — Layering and namespace problems.
 
 10.Critical — No tests, CI, or quality gates.
+
+=======
+New changes 
+Caching , Rate limit , authentication layers, 
