@@ -24,3 +24,13 @@ namespace ProductCatalog.Api.Controllers
         [JsonProperty] public string Name { get; set; }
     }
 }
+
+//Protect the endpoint with authentication
+//Hard-coded secret and identity. The same token literal also exists in ProductHttpClient, ShopperHistoryHttpClient and WooliesXProxy.
+// 	The credential is committed to source control, cannot be rotated without a code change
+// , cannot differ per environment, and four copies can drift apart.
+
+//An anonymous endpoint hands out the upstream token .Security issue 
+// Anyone who can reach the API can read the credential
+
+//Missing [ApiController] and untyped IActionResult.

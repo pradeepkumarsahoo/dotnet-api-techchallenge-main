@@ -28,3 +28,16 @@ namespace ProductCatalog.Api.Controllers
         }
     }
 }
+
+//Misleading routes. [Route("/products")] plus [HttpGet("/sort")]: 
+//Misleading routes. [Route("/products")] plus [HttpGet("/sort")]: the leading slash makes the action ignore the controller route,
+//  so the real URL is /sort, not /products/sort. 
+// The leading slash on the class route is also redundant.
+
+// sortOption binding is case-insensitive: low, LOW and Low all work.
+// string sortOption with magic values ("Low", "High", …) compared case-sensitively deeper in the handler.
+// Typos and different casing are not caught by the compiler. ?sortOption=low silently returns unsorted data.
+
+//No input validation. A missing or unknown option still returns HTTP 200 with unsorted products.
+
+//Domain model returned directly (Product is both domain type and HTTP response). /Instead of domain model , return DTO object mapping model 

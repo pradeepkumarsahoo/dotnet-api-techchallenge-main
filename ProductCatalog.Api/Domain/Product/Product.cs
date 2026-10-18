@@ -26,3 +26,13 @@ namespace ProductCatalog.Api.Domain.Product
         }
     }
 }
+
+//double for money 
+//Binary floating point cannot represent values like 0.1 exactly; equality and totals can be off by tiny amounts.
+//decimal Price. JSON numbers stay the same on the wire.
+
+//Serialisation attributes inside the domain type.
+//Misleading, and ties the domain model to one JSON library.
+
+//Property attributes removed. A single [JsonConstructor] states how upstream JSON is read.
+

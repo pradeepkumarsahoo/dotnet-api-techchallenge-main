@@ -1,0 +1,19 @@
+1.Critical — Token hard-coded in four places and returned by /user
+
+2.Major — DI bypassed in ProductController
+
+3.Major — String-typed sort contract that fails silently with HTTP 200.
+
+4.Critical — Recommendation algorithm is O(n·m), throws on duplicate names, and returns nulls.
+
+5.Critical — Upstream calls have no timeout, cancellation, or resilience.
+
+6.Major — Log-and-throw leaks the token, with no structured error handling.
+
+7.Major — Static /trolleyTotal pass-through for all HTTP verbs.
+
+8.Major — double used for money, Product reused for order lines, and broken equality.
+
+9.Major — Layering and namespace problems.
+
+10.Critical — No tests, CI, or quality gates.

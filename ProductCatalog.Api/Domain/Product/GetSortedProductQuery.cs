@@ -80,3 +80,22 @@ namespace ProductCatalog.Api.Domain.Product
         public IEnumerable<Product> Products { get; }
     }
 }
+
+//string SortOption,The compiler cannot catch typos; valid values are known only by reading the handler.
+//SortOption enum. Controller binding is case-insensitive.
+
+//Long if / else if chain on magic strings,Case-sensitive (low fails). Each new option edits this method.
+//switch over the enum; each branch is one line. (A strategy dictionary is the next step if options keep growing.)
+
+//Unknown option silently returns unsorted data
+//Caller receives HTTP 200 with the wrong order and never learns about the typo.
+//Invalid input is rejected with 400 at the controller; handler throws ArgumentOutOfRangeException in default.
+
+
+//Sequential upstream calls (products, then history inside Recommend)
+//The two calls are independent, so latency is the sum of both instead of the slower one.
+//Task.WhenAll for the Recommended path.
+
+
+
+
