@@ -1,36 +1,38 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
+using Microsoft.Extensions.Options;
+using ProductCatalog.Api.Contracts;
+using ProductCatalog.Api.Infrastructure.WooliesX;
+using System.ComponentModel.DataAnnotations;
 
 namespace ProductCatalog.Api.Controllers
 {
+    [ApiController]
+    [Authorize]
     [Route("user")]
-    public class UserController : ControllerBase
+    public sealed class UserController : ControllerBase
     {
-        [HttpGet]
-        public IActionResult FindUser()
+        private readonly UserOptions _user;
+        private readonly WooliesXOptions _wooliesX;
+
+        public UserController(IOptions<UserOptions> user, IOptions<WooliesXOptions> wooliesX)
         {
-            return Ok(new UserResponseModel
-            {
-                Name = "John Smith",
-                Token = "25a4f06f-8fd5-49b3-a711-c013c156f8c8"
-            });
+            _user = user.Value;
+            _wooliesX = wooliesX.Value;
         }
+
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public ActionResult<UserResponse> FindUser() => Ok(new UserResponse(_user.Name, _wooliesX.Token));
     }
 
-    public class UserResponseModel
+    public sealed class UserOptions
     {
-        [JsonProperty] public string Token { get; set; }
+        public const string SectionName = "User";
 
-        [JsonProperty] public string Name { get; set; }
+        [Required]
+        public string Name { get; set; } = string.Empty;
     }
 }
-
-//Protect the endpoint with authentication
-//Hard-coded secret and identity. The same token literal also exists in ProductHttpClient, ShopperHistoryHttpClient and WooliesXProxy.
-// 	The credential is committed to source control, cannot be rotated without a code change
-// , cannot differ per environment, and four copies can drift apart.
-
-//An anonymous endpoint hands out the upstream token .Security issue 
-// Anyone who can reach the API can read the credential
-
-//Missing [ApiController] and untyped IActionResult.

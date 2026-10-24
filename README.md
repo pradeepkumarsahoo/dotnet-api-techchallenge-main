@@ -31,3 +31,23 @@ Response will be in the same data structure as the "products" response (only sor
 * You will however need to spend a **maximum of 30 mins** to familiarise yourself with the code before attending the first interview. 
 * The code will be used as a reference in our technical interview. 
 * The technical interview will not be limited to the code shared.
+
+## Design review and fixes
+
+The original code had a number of design problems (listed in `DesignProblems.txt`). They have been fixed, and each one is documented in [docs/design-review](docs/design-review/README.md): the problem, the fix, the trade-offs, and interview talking points.
+
+Behaviour changes to be aware of:
+
+* The sort endpoint is `GET /products/sort?sortOption=...` (the original `/sort` still works). Missing or unknown options return `400` ProblemDetails instead of unsorted data.
+* `/trolleyTotal` accepts `POST` with a JSON body only.
+* All endpoints except `/` and `/health` require an `X-Api-Key` header, and are rate limited per client.
+
+### Running locally
+
+```
+dotnet user-secrets set "WooliesX:Token" "<upstream token>" --project ProductCatalog.Api
+dotnet user-secrets set "Authentication:ApiKey:Clients:0:ClientId" "local-dev" --project ProductCatalog.Api
+dotnet user-secrets set "Authentication:ApiKey:Clients:0:Key" "<any random key>" --project ProductCatalog.Api
+dotnet run --project ProductCatalog.Api
+dotnet test
+```

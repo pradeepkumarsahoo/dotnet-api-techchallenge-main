@@ -1,12 +1,15 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using ProductCatalog.Api.Domain.HttpClients;
-using ProductCatalog.Api.Domain.Product;
-using System.IO;
+using ProductCatalog.Api.Application.Products;
+using ProductCatalog.Api.Controllers;
+using ProductCatalog.Api.ErrorHandling;
+using ProductCatalog.Api.Infrastructure.WooliesX;
+using ProductCatalog.Api.RateLimiting;
+using ProductCatalog.Api.Security;
 
 namespace ProductCatalog.Api
 {
@@ -19,35 +22,50 @@ namespace ProductCatalog.Api
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddTransient<GetSortedProductQueryHandler>();
-            services.AddTransient<IProductHttpClient, ProductHttpClient>();
-            services.AddTransient<IShopperHistoryHttpClient, ShopperHistoryHttpClient>();
+            services.AddProblemDetails();
+            services.AddExceptionHandler<GlobalExceptionHandler>();
+            services.AddHealthChecks();
+
+            services.AddOptions<UserOptions>()
+                .Bind(Configuration.GetSection(UserOptions.SectionName))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
+            services.AddScoped<GetSortedProductsQueryHandler>();
+            services.AddWooliesXClients(Configuration);
+
+            services.AddAuthentication(ApiKeyDefaults.AuthenticationScheme)
+                .AddScheme<ApiKeyAuthenticationOptions, ApiKeyAuthenticationHandler>(
+                    ApiKeyDefaults.AuthenticationScheme,
+                    options => Configuration.GetSection("Authentication:ApiKey").Bind(options));
+
+            // Secure by default: every endpoint requires an authenticated caller unless it opts out with AllowAnonymous.
+            services.AddAuthorization(options =>
+                options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
+
+            services.AddClientRateLimiting(Configuration);
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            app.UseExceptionHandler();
+            app.UseStatusCodePages();
 
             app.UseHttpsRedirection();
 
             app.UseRouting();
 
+            app.UseAuthentication();
+            app.UseRateLimiter();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.Map("/", async context => { await context.Response.WriteAsync("Welcome to Product Catalog API"); });
-
-                endpoints.Map("/trolleyTotal", async context => { await WooliesXProxy.TrolleyCalculator(context); });
-
+                endpoints.MapGet("/", () => "Welcome to Product Catalog API").AllowAnonymous();
+                endpoints.MapHealthChecks("/health").AllowAnonymous();
                 endpoints.MapControllers();
             });
         }
